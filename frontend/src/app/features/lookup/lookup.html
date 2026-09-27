@@ -1,0 +1,103 @@
+<section class="panel">
+  <header class="panel__header">
+    <h2 class="panel__title">Look up a user</h2>
+    <p class="panel__subtitle">Find an onboarded user by email or user ID.</p>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Lookup mode">
+    <button
+      type="button"
+      role="tab"
+      class="tabs__tab"
+      [class.tabs__tab--active]="mode() === 'email'"
+      [attr.aria-selected]="mode() === 'email'"
+      (click)="setMode('email')"
+    >
+      By email
+    </button>
+    <button
+      type="button"
+      role="tab"
+      class="tabs__tab"
+      [class.tabs__tab--active]="mode() === 'id'"
+      [attr.aria-selected]="mode() === 'id'"
+      (click)="setMode('id')"
+    >
+      By user ID
+    </button>
+  </div>
+
+  <form class="form" [formGroup]="form" (ngSubmit)="search()" novalidate>
+    @if (mode() === 'email') {
+      <div class="field">
+        <label class="field__label" for="lookupEmail">Email</label>
+        <input
+          id="lookupEmail"
+          class="field__input"
+          type="email"
+          formControlName="email"
+          autocomplete="off"
+          placeholder="alan@example.com"
+          [class.field__input--invalid]="form.controls.email.touched && form.controls.email.invalid"
+        />
+        @if (form.controls.email.touched && form.controls.email.invalid) {
+          <p class="field__error">Enter a valid email address.</p>
+        }
+      </div>
+    } @else {
+      <div class="field">
+        <label class="field__label" for="lookupId">User ID</label>
+        <input
+          id="lookupId"
+          class="field__input mono"
+          type="text"
+          formControlName="id"
+          autocomplete="off"
+          placeholder="f94840c1-d1fd-41c6-9b76-433900e3a000"
+          [class.field__input--invalid]="form.controls.id.touched && form.controls.id.invalid"
+        />
+        @if (form.controls.id.touched && form.controls.id.invalid) {
+          <p class="field__error">Enter a valid UUID.</p>
+        }
+      </div>
+    }
+
+    <div class="actions">
+      <button class="button button--primary" type="submit" [disabled]="loading()">
+        {{ loading() ? 'Searching…' : 'Search' }}
+      </button>
+    </div>
+  </form>
+
+  @if (foundUser(); as user) {
+    <div class="result-card" role="status">
+      <div class="result-card__badge">Found</div>
+      <dl class="result-card__grid">
+        <div>
+          <dt>Name</dt>
+          <dd>{{ user.fullName }}</dd>
+        </div>
+        <div>
+          <dt>Email</dt>
+          <dd>{{ user.email }}</dd>
+        </div>
+        <div>
+          <dt>Date of birth</dt>
+          <dd>{{ user.dateOfBirth }}</dd>
+        </div>
+        <div>
+          <dt>Status</dt>
+          <dd><span class="pill">{{ user.status }}</span></dd>
+        </div>
+        <div>
+          <dt>User ID</dt>
+          <dd class="mono">{{ user.id }}</dd>
+        </div>
+        <div>
+          <dt>Created</dt>
+          <dd>{{ user.createdAt }}</dd>
+        </div>
+      </dl>
+    </div>
+  }
+</section>

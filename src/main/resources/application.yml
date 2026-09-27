@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: user-onboarding-api
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    com.example.onboarding: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %5p [%X{requestId:-no-request-id}] %-45.45logger{39} : %m%n"

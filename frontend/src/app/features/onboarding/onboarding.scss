@@ -1,0 +1,123 @@
+.result-card {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid #bbf7d0;
+  border-radius: 0.75rem;
+  background: #f0fdf4;
+}
+
+.result-card__badge {
+  display: inline-block;
+  margin-bottom: 0.875rem;
+  padding: 0.1875rem 0.625rem;
+  border-radius: 9999px;
+  background: #16a34a;
+  color: #ffffff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.result-card__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.875rem;
+  margin: 0;
+
+  dt {
+    margin: 0 0 0.125rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+
+  dd {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #14532d;
+    overflow-wrap: anywhere;
+  }
+}
+
+.field__group {
+  display: flex;
+  gap: 0.5rem;
+
+  .field__input {
+    flex: 1;
+  }
+}
+
+.field__toggle {
+  flex-shrink: 0;
+  padding: 0 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: #f8fafc;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: #e2e8f0;
+  }
+}
+
+.strength {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-top: 0.5rem;
+
+  &[data-score='0'],
+  &[data-score='1'] {
+    --strength-color: #dc2626;
+  }
+
+  &[data-score='2'] {
+    --strength-color: #ea580c;
+  }
+
+  &[data-score='3'] {
+    --strength-color: #ca8a04;
+  }
+
+  &[data-score='4'],
+  &[data-score='5'] {
+    --strength-color: #16a34a;
+  }
+}
+
+.strength__track {
+  flex: 1;
+  height: 0.375rem;
+  border-radius: 9999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.strength__bar {
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--strength-color, #64748b);
+  transition:
+    width 180ms ease-out,
+    background-color 180ms ease-out;
+}
+
+.strength__label {
+  min-width: 4.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--strength-color, #64748b);
+}
+
+.actions {
+  display: flex;
+  gap: 0.625rem;
+  margin-top: 0.5rem;
+}

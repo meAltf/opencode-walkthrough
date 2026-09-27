@@ -1,0 +1,30 @@
+# Maven
+target/
+
+# Node
+node_modules/
+
+# Build output
+dist/
+.angular/cache/
+
+# IDEs and editors
+.idea/
+*.iml
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor system files
+.DS_Store
+Thumbs.db
+
+# Local env / secrets
+.env
+.env.*
