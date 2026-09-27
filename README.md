@@ -1,119 +1,108 @@
-# User Onboarding API
-
-Spring Boot **4.1.1** REST API for user onboarding, layered per the `spring-api` skill:
-Controller → Service → DTOs → Validation → Logging → Exception handling → Standardized response.
-
-## Requirements
-
-- Java 17+ (built and tested on Java 21)
-- Maven 3.9+
-
-## Run
-
-```bash
-mvn spring-boot:run
-# or
-mvn package && java -jar target/user-onboarding-api-0.0.1-SNAPSHOT.jar
-```
-
-Listens on `http://localhost:8080`.
-
-## Endpoints
-
-| Method | Path                        | Success code               | Description                     |
-|--------|-----------------------------|----------------------------|---------------------------------|
-| POST   | `/api/v1/users/onboarding`  | `ONB_201_USER_ONBOARDED`   | Onboard a new user (201)        |
-| GET    | `/api/v1/users/onboarding/{id}`   | `ONB_200_USER_FOUND` | Fetch by id                     |
-| GET    | `/api/v1/users/onboarding?email=` | `ONB_200_USER_FOUND` | Fetch by email             |
-
-### Request body
-
-```json
-{
-  "email": "alan@example.com",
-  "fullName": "Alan Turing",
-  "password": "s3cret-pass",
-  "dateOfBirth": "1912-06-23",
-  "termsAccepted": true
-}
-```
-
-### Example
-
-```bash
-curl -X POST http://localhost:8080/api/v1/users/onboarding \
-  -H 'Content-Type: application/json' \
-  -d '{"email":"alan@example.com","fullName":"Alan Turing","password":"s3cret-pass","dateOfBirth":"1912-06-23","termsAccepted":true}'
-```
-
-```json
-{
-  "success": true,
-  "code": "ONB_201_USER_ONBOARDED",
-  "message": "user onboarding completed",
-  "data": {
-    "id": "f94840c1-d1fd-41c6-9b76-433900e3a000",
-    "email": "alan@example.com",
-    "fullName": "Alan Turing",
-    "dateOfBirth": "1912-06-23",
-    "status": "COMPLETED",
-    "createdAt": "2026-09-27T11:46:39.925443Z"
-  },
-  "timestamp": "2026-09-27T11:46:39.925761Z"
-}
-```
-
-## Standardized response
-
-Every response — success or failure — uses the same `ApiResponse<T>` envelope:
-`success`, `code`, `message`, `data`, `timestamp`.
-
-### Error codes
-
-| Code                          | HTTP | Meaning                              |
-|-------------------------------|------|--------------------------------------|
-| `ONB_400_VALIDATION_FAILED`   | 400  | Bean validation failed (per-field)   |
-| `ONB_400_MALFORMED_BODY`      | 400  | Missing or unparseable JSON          |
-| `ONB_404_USER_NOT_FOUND`      | 404  | No user for that id/email            |
-| `ONB_409_EMAIL_EXISTS`        | 409  | Email already onboarded              |
-| `ONB_500_INTERNAL_ERROR`      | 500  | Unhandled exception (details logged) |
-
-Validation failures return a `data` array of `{field, message, rejectedValue}`.
-**Passwords and other secret-ish fields are redacted** to `***REDACTED***` before
-being echoed back.
-
-## Design notes
-
-- **Storage is in-memory** (`ConcurrentHashMap` in `UserOnboardingServiceImpl`), so the
-  app runs with no external dependencies. Swap the maps for a JPA repository to persist.
-- **Passwords are never stored or returned in plaintext** — `PasswordHasher` uses
-  PBKDF2-HMAC-SHA256 (210k iterations, 16-byte random salt) from the JDK, so no extra
-  dependency is needed. Use `matches()` to verify.
-- **Duplicate emails are rejected atomically** via `Map.putIfAbsent`, avoiding a
-  check-then-act race.
-- **Request correlation**: `RequestIdFilter` generates/propagates an `X-Request-Id` header,
-  puts it in the SLF4J MDC, and logs method/path/status/duration. The log pattern in
-  `application.yml` prints it as `[<requestId>]`.
-
-## Spring Boot 4 migration gotchas
-
-Boot 4 / Spring Framework 7 / Jackson 3 break from Boot 3 conventions. This project uses:
-
-- `spring-boot-starter-webmvc` — `spring-boot-starter-web` is **deprecated**.
-- Jackson 3: `tools.jackson.databind.ObjectMapper`, **not** `com.fasterxml.jackson.databind`.
-- `HandlerMethodValidationException.getParameterValidationResults()` replaced
-  `getAllValidationResults()`.
-- `@AutoConfigureMockMvc` / `@WebMvcTest` live in
-  `org.springframework.boot.webmvc.test.autoconfigure`; `TestRestTemplate` in
-  `org.springframework.boot.resttestclient`.
-- `spring-boot-starter-test` no longer brings web test support — add
-  `spring-boot-starter-webmvc-test`.
-
-## Tests
-
-```bash
-mvn test
-```
-
-17 tests: controller integration (MockMvc, 9), service unit (5), password hasher (3).
 # opencode-walkthrough
+
+A hands-on walkthrough of driving [opencode](https://opencode.ai) against a real
+codebase. This repo exists to record what a working setup looks like: an opencode
+configuration, a small set of project skills, and a full-stack app built by
+following them.
+
+Every piece of work lives in its own folder with its own README, so changes are
+scoped and reviewable folder by folder.
+
+## Layout
+
+```
+opencode-walkthrough/
+├── .opencode/            # opencode project config
+│   └── skills/           # project skills the agent loads on demand
+│       ├── angular-feature/SKILL.md
+│       ├── debug-backend/SKILL.md
+│       └── spring-api/SKILL.md
+├── backend/              # Spring Boot 4.1 REST API  (Java 21, Maven)
+│   ├── pom.xml
+│   ├── src/main/         # application code
+│   ├── src/test/         # 17 tests
+│   └── README.md         # API reference, error codes, design notes
+├── frontend/             # Angular 20 SPA            (TypeScript, npm)
+│   ├── src/app/          # components, services, models
+│   └── README.md
+├── opencode.json         # permissions, MCP servers, agent models
+└── README.md             # you are here
+```
+
+## Working on the app
+
+The two apps are independent. Run the backend first, then the frontend — the
+frontend proxies `/api` to `http://localhost:8080` via
+`frontend/proxy.conf.json`, so both must be running for the UI to reach the API.
+
+```bash
+# terminal 1 — API on :8080
+cd backend && mvn spring-boot:run
+
+# terminal 2 — UI on :4200
+cd frontend && npm install && npm start
+```
+
+Verify a change before you commit it:
+
+```bash
+cd backend  && mvn test     # 17 tests
+cd frontend && npm run build
+```
+
+## opencode configuration
+
+`opencode.json` holds three things.
+
+**Permissions** decide what the agent may do without asking. Edits, web fetches,
+web search, skills, todo tracking, and questions are all `allow`; `bash` is `ask`,
+so shell commands still get your confirmation.
+
+**MCP servers** extend the agent with outside tools:
+
+| Server   | Kind    | Purpose                                  |
+|----------|---------|------------------------------------------|
+| `docs`   | remote  | Context7 — current library documentation |
+| `weather`| local   | Open-Meteo forecasts and climate data    |
+
+**Agents** pin a model per mode; the default `plan` agent is set to
+`opencode/gpt-5.1-codex`.
+
+## Skills
+
+Skills are the workflow this repo teaches. The agent picks one up when a task
+matches its description.
+
+| Skill              | Applies to                                            |
+|--------------------|-------------------------------------------------------|
+| `spring-api`       | Building a Spring Boot endpoint: controller → service → DTOs → validation → logging → error handling |
+| `angular-feature`  | Building an Angular feature: component → service → API wiring → error toast → UI logic |
+| `debug-backend`    | Debugging a backend fault: logs → failing layer → reproduce → minimal fix → test → validate |
+
+They are deliberately short checklists. The detail lives in the code they produce —
+see `backend/README.md` for how a `spring-api` endpoint is actually layered.
+
+## Change log
+
+Kept per folder so a diff in one place does not have to be read alongside the
+others. Newest first.
+
+### Root
+
+- Restructured the repo into `backend/` and `frontend/` so each is independently
+  buildable and documented.
+- Added the root `.gitignore` for Maven, Node, and build output.
+- Added `opencode.json` with permissions, the `docs` and `weather` MCP servers, and
+  a pinned `plan` agent.
+- Added the `spring-api`, `angular-feature`, and `debug-backend` skills.
+
+### `backend/`
+
+- Spring Boot 4.1 onboarding API: in-memory storage, PBKDF2 password hashing,
+  bean validation, a standardized `ApiResponse` envelope, and `X-Request-Id`
+  correlation via `RequestIdFilter` + SLF4J MDC. 17 tests.
+
+### `frontend/`
+
+- Angular 20 onboarding form plus lookup by id and by email, with a toast stack for
+  API errors and a service layer over `/api/v1/users/onboarding`.

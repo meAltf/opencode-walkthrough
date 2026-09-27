@@ -1,6 +1,6 @@
 # User Onboarding UI
 
-Angular **20.3.32** frontend for the [Spring Boot user onboarding API](../README.md).
+Angular **20.3.32** frontend for the [Spring Boot user onboarding API](../backend/README.md).
 Built following the `angular-feature` skill.
 
 ## Requirements
@@ -18,10 +18,10 @@ Start the backend first, then the dev server:
 
 ```bash
 # terminal 1 — API on :8080
-cd .. && mvn spring-boot:run
+cd ../backend && mvn spring-boot:run
 
 # terminal 2 — UI on :4200
-cd frontend && npm install && npm start
+npm install && npm start
 ```
 
 Open <http://localhost:4200>. It redirects to `/onboarding`.
