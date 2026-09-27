@@ -3,7 +3,7 @@
 Spring Boot **4.1.1** REST API for user onboarding, layered per the `spring-api` skill:
 Controller → Service → DTOs → Validation → Logging → Exception handling → Standardized response.
 
-> Part of [opencode-walkthrough](../README.md). All commands below run from this
+> Part of [opencode-walkthrough](../../README.md). All commands below run from this
 > `backend/` directory.
 
 ## Requirements
